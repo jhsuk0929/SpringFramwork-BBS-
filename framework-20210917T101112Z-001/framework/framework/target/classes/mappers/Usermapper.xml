@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="User">
+  
+  	<select id="Login" parameterType="map" resultType="com.jihun.bbs.Dto.User">
+  	select * from user where userID = '${userID}' and userPassword = '${userPassword}'
+  	</select>
+  	
+	<insert id="addUser" parameterType="map">
+	insert into user(userID,userPassword, userName, userGender, userEmail) 
+	values('${userID}','${userPassword}','${userName}','${userGender}','${userEmail}')
+	</insert>  	
+  	
+  	<select id="checkDup" parameterType="map" resultType="Integer">
+	select count(*) from user where userID = '${userID}' or userPassword = '${userPassword}' or userName = '${userName}' or userEmail = '${userEmail}'
+  	</select>
+  	
+  
+  <update id="changePassword" parameterType="map">
+  update user set userPassword = '${Password}' where userID = '${userID}'
+  </update>
+  
+  <update id="addRecord" parameterType="map">
+  update user set ${userStatus} = 
+'${bbsID2}' where userID = '${userID}'
+  </update>
+  
+  
+  
+  <delete id="deleteAccount" parameterType="map">
+  delete from user where userID = '${userID}' and userPassword = '${userPassword}' and userEmail = '${userEmail}'
+  </delete>
+  
+  <select id="getAccount" parameterType="String" resultType = "com.jihun.bbs.Dto.User">
+  select * from user where userID = '${userID}'
+  </select>
+  
+  <!-- = -->
+  <select id="getUserStatus" parameterType="map" resultType = "string">
+  select ${userStatus} from user where userID = '${userID}'
+  </select>
+  
+  
+  </mapper>

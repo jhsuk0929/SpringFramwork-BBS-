@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="Reply">
+  
+  <select id="getComments" parameterType="map" resultType="com.jihun.bbs.Dto.Reply">
+  select * from reply where replyAvailable = 1 and bbsID = ${bbsID} order by replyDate DESC limit ${limit},4
+  </select>
+  
+  <select id="count" parameterType="map" resultType="Integer">
+  select count(*) from reply where replyAvailable = 1 and bbsID = ${bbsID}
+  </select>
+  
+  <update id="upddate" parameterType="map">
+  update reply set replyContent = '${updateContent}' where replyID = ${replyID} and bbsID = ${bbsID}
+  </update>
+  
+  <update id="delete" parameterType="map">
+  update reply set replyAvailable = 2 where replyID = ${replyID} and bbsID = ${bbsID}
+  </update>
+  
+  <select id="getReplyID" resultType = "Integer">
+  select replyID from reply order by replyID DESC limit 1
+  </select>
+  
+  <insert id="replyWrite" parameterType="map">
+  insert into reply(replyID,bbsID,replyContent,userID,replyDate,replyAvailable) values(
+  ${replyID}, ${bbsID}, '${replyContent}', '${userID}', '${replyDate}', ${replyAvailable})
+  </insert>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  </mapper>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>글 작성</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- <link th:href="@{css/demo.css}" href="../static/css/demo.css" rel="stylesheet" /> -->
+</head>
+<style>
+div.container{
+	position: static;
+	border: 3px solid #000000;
+	text-align: left;
+	background-color: gray;
+}
+div.replyPaging{
+	text-align:center;
+	width: 100%;
+	margin: 8px 100px;
+ 	display: inline;
+}
+.btn, select {
+  width: 45%;
+  margin: 8px 0;
+  display: inline;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.add, select{
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.replyButton, select{
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.replyFunction, select{
+  width: 45%;
+  display: inline;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  text-align: center;
+}
+input[type=text], select {
+  width: 1126.5px;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  text-align: left;
+}
+h1{
+	text-align:center;
+}
+h2{
+	width: 1000px;
+}
+table{
+	text-align:left;
+	height:400px;
+}
+tr.spaceHere>td {
+  padding-top: 2em;
+}
+tr.this>td{
+	text-align: right;
+}
+</style>
+<body>
+	<!-- 공통 네비게이션 바 -->
+	<div style="position:sticky; top:0 ;" th:if = "${check} != null" th:insert="inc/Sessionheader">...</div>
+	
+	<div style="position:sticky; top:0 ;" th:unless = "${check} != null" th:insert="inc/header">...</div>
+	
+	<!-- 글 쓰기 양식 -->
+	<div class="container">
+	<div>
+		<form id = "form" >
+			<table>
+				<thead>
+					<tr>
+						<td><h1>게시판 글 보기</h1></td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><label for="bbsTitle">글 제목 <br> <input
+								type="text" id="bbsTitle" name="bbsTitle"th:value="${bbsTitle}"
+								th:placeholder="${bbsTitle}" required readonly>
+						</label></td>
+					</tr>
+					<tr>
+						<td><label for="userIDforBBS">작성자 <br> <input
+								type="text" th:placeholder="${userID}" th:value="${userID}"
+								id="userIDforBBS" name="userID" required readonly></input>
+						</label></td>
+					</tr>
+					<tr>
+						<td><label for="bbsContent">본문 내용<br>
+							<br> <textarea name="bbsContent" id="bbsContent" th:value="${bbsContent}" rows="10"
+									cols="138" th:text="${bbsContent}"  required readonly></textarea>
+						</label></td>
+					</tr>
+					<tr>
+						<td>
+							<input type="hidden" id="bbsID" name="bbsID" th:value="${bbsID}">
+							<button th:if="${check} == ${userID}" type="button" class="btn" th:value="${bbsID}" id="updateButton" name="updateButton" th:onclick="update1()"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							<button th:if="${check} == ${userID}" type="button" class="btn" th:value="${bbsID}" id="deleteButton" name="deleteButton" onclick="delete1(this)"></button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+	</div>
+	<br><br>
+	<!-- 댓글 창 양식 -->
+	<div>
+		<table>
+			<thead>
+				<tr>
+					<td>
+						<h2>댓글란(<span th:text="${total}"></span>)</h2>
+					</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class = "spaceHere" th:each = "reply: ${replyList}">
+					<td>
+						<strong><span id="userIDforReply" th:text="${reply.userID}"></span></strong>
+						<input type="text" th:id="replyContent- + ${reply.replyID}" name="replyContent-" th:value="${reply.replyContent}" required readonly>
+                	    <button type="button" class = "replyFunction" th:if="${reply.userID} == ${check}" id="replyUpdate" name="replyUpdate" onclick="settingModify(this)"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<button type="button" class = "replyFunction" th:if="${reply.userID} == ${check}" id="replyDelete" name="replyDelete" onclick="settingModify(this)"></button>
+					</td>
+				
+				</tr>
+				
+				<tr class = "spaceHere">
+					<td>
+					<div>
+						<form action="replyWrite" method="Post">
+						<label for="replyContent">덧글 쓰기 
+							<input type="hidden" id="bbsIDforReply" name="bbsID" th:value="${bbsID}">
+							<input  type="text" id="replyContent" name="replyContent" placeholder="댓글을 입력하세요" required>
+							
+						</label>
+							
+							<button th:if="${check} != null" class = "add" name="add" id="add" onclick="writecheck()">댓글 등록</button>
+							<button th:unless="${check} != null" class="add" name="add" id="add" disabled>댓글을 등록하려면 로그인이 필요합니다</button>
+						</form>
+					</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div class="replyPaging">
+							<form action="detail" method="Get">
+								<input type="hidden" id="replyPage" name="replyPage" th:value="${replyPage}">						
+								<input type="hidden" id="bbsIDforReplyPage" name="bbsID" th:value="${bbsID}">
+								<input type="hidden" id="totalPage" name="totalPage" th:value="${totalPage}">
+								<button class="replyButton" id="previousReply" name="previousReply" th:onclick="previousPage()">◀</button>
+								<button th:each = "button:${buttons}" th:id="paging + ${button}" th:value="${button}" th:text="${button}" th:onclick="paging(this)"></button>
+								<button class="replyButton" id="nextReply" name="nextReply" th:onclick="nextPage()">▶</button>
+							</form>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	</div>
+
+
+	<script type="text/javascript">
+    
+
+
+	//댓글 삭제 기능
+	 function deleteReply(){
+		document.getElementById("replyForm").setAttribute("action", "deleteReply");
+		document.getElementById("replyForm").setAttribute("method", "post")
+
+		var check = confirm("정말로 삭제하시겠습니까?");
+		if(check){
+		document.getElementById("replyForm").submit();
+		}
+	}	
+	
+	//댓글 수정 기능
+	function replyUpdate(){
+		var updateContent1 = document.getElementById("those").parentElement.firstElementChild.nextElementSibling.value;
+		console.log(updateContent1);
+		updateContent.setAttribute("value", updateContent1);
+
+		document.getElementById("replyForm").setAttribute("action", "replyUpdate");
+		document.getElementById("replyForm").setAttribute("method", "post")
+		
+		document.getElementById("replyForm").submit();
+
+	} 
+	
+	//댓글 작성전 빈칸 체크
+	 function writecheck(){
+		// 댓글 란이 null이 아니고, 빈 칸이 아닐 시
+		if(document.getElementById("replyContent").value != null && document.getElementById("replyContent").value != ""){
+			submit();
+		}else{
+			alert("댓글을 입력하세요");			
+		}
+		
+	}
+ 
+	// 댓글 삭제 수정전 세팅
+	function settingModify(button){
+		//공통
+		
+		
+		
+		//update 혹은 delete 확인
+		var id = button.id;
+		var h = id.split("-");
+		console.log( h[0]);
+		
+		var td = button.parentElement;
+		console.log(td);
+		var form = document.createElement("form");
+		form.setAttribute("id","replyForm");
+		
+		td.appendChild(form);
+		form.setAttribute("action", "replyUpdate");
+		form.setAttribute("method", "post");
+		
+		var replyID = document.createElement("input");
+		var replyPage = document.createElement("input");
+		var bbsID = document.createElement("input");
+		var updateContent = document.createElement("input");
+		
+		var tttt = td.firstElementChild.nextElementSibling.id
+		var b =tttt.split("-");
+		
+		var replyID1 = b[1];
+		var replyPage1 = document.getElementById("replyPage").getAttribute("value");
+		var bbsID1 = document.getElementById("bbsID").getAttribute("value");
+
+		replyID.setAttribute("value", replyID1);
+		replyPage.setAttribute("value", replyPage1);
+		bbsID.setAttribute("value", bbsID1);
+	
+		replyID.setAttribute("type", "hidden");
+		replyPage.setAttribute("type", "hidden");
+		bbsID.setAttribute("type", "hidden");
+		updateContent.setAttribute("type", "hidden");
+		
+		replyID.setAttribute("name", "replyID");
+		replyPage.setAttribute("name", "replyPage");
+		bbsID.setAttribute("name", "bbsID");
+		updateContent.setAttribute("name", "updateContent");
+		updateContent.setAttribute("id", "updateContent");
+
+		form.appendChild(replyID);
+		form.appendChild(replyPage);
+		form.appendChild(bbsID);
+		form.appendChild(updateContent);
+		
+		
+			//댓글 수정
+		 if (h[0] == "update"){
+		 button.setAttribute("id", "those");
+		 button.nextElementSibling.setAttribute("id", "that")
+		 button.innerText = "수정 댓글 등록";
+		 button.nextElementSibling.innerText = "댓글 수정 취소";
+		 var q = document.getElementById("that");
+		 q.removeAttribute("onclick");
+		 q.setAttribute("onclick","canceling()");
+		 button.removeAttribute("onclick");
+		 button.setAttribute("onclick","replyUpdate()");
+		 
+		 var content = button.parentElement.firstElementChild.nextElementSibling
+		 content.readOnly = false;
+		 content.required = true;
+		 
+		var list = document.getElementsByTagName("button");
+		var length = list.length
+		 console.log(list);
+		 console.log(list.length);
+			var check = 0;
+			var plus = 1;
+			
+			
+		 for( i = 0; i<length; i++){
+			 console.log(i + list.item(check).id);
+			 console.log("first: " + check);
+			 	
+			if(list.item(check).id != "those" && list.item(check).id != "that"){
+				document.getElementById(list.item(check).parentElement.removeChild(list.item(check)));
+			} else if (list.item(check).id == "those" || list.item(check).id == "that"){
+					check = check + plus;
+			}
+			
+			}
+		
+		 
+		//댓글 삭제
+		 	}else if(h[0] == "delete"){
+				deleteReply();
+		 }
+	}
+
+	//댓글, 게시글 수정 취소
+	function canceling(){
+		 var goback = confirm("수정을 취소하시겠습니까?");
+		 if (goback){
+			 location.reload();
+		 }
+	}
+	
+	
+	// 게시글, 댓글 수정 삭제 inner text
+	var update = document.getElementById("updateButton");
+	if(update != null){
+		update.innerText = "글 수정";
+		}
+	var fundel = document.getElementById("deleteButton");
+	if(fundel != null){
+		fundel.innerText = "글 삭제";
+	}
+	const replyDel = [];
+
+	while(document.getElementById("replyDelete")){
+		var a = document.getElementById("replyDelete");
+		replyDel.push(a)
+		a.setAttribute("id", "delete-Changed");
+	}
+	
+	for (const element of replyDel){
+		element.innerText = "댓글 삭제";
+	}
+	
+	const replyUp = [];
+
+	while(document.getElementById("replyUpdate")){
+		var a = document.getElementById("replyUpdate");
+		replyUp.push(a)
+		a.setAttribute("id", "update-Changed");
+	}
+	
+	for (const element of replyUp){
+		element.innerText = "댓글 수정";
+	}
+	
+	
+	
+	
+	// 댓글 페이지 이동 (숫자 클릭시)
+	function paging(button){
+		var value = button.value;
+		console.log(value);
+		if(parseInt(value)<=parseInt(document.getElementById("totalPage").value)){
+		document.getElementById("replyPage").setAttribute("value",value);
+		submit();
+		} else{
+			alert("존재하지 않는 페이지입니다.")
+		}
+	}
+	// 댓글 페이지 이동 (다음 버튼 클릭시)
+	function nextPage(){
+		if(parseInt(document.getElementById("replyPage").value)>=1 && parseInt(document.getElementById("replyPage").value)<parseInt(document.getElementById("totalPage").value)){
+		document.getElementById("replyPage").setAttribute("value",parseInt(document.getElementById("replyPage").value) +1);
+		console.log(document.getElementById("replyPage").value);
+		submit();
+		}else{
+			alert("마지막 페이지 입니다.")
+		}
+	}
+	// 댓글 페이지 이동 (이전 버튼 클릭시)
+	function previousPage(){		
+		if(parseInt(document.getElementById("replyPage").value)>1){
+		document.getElementById("replyPage").setAttribute("value",parseInt(document.getElementById("replyPage").value) -1);
+		console.log(document.getElementById("replyPage").value);
+		submit();
+		} else{
+			alert("이전 페이지가 없습니다.")
+		}
+	}
+		//게시글 수정
+		function update1(){
+			
+			var list = document.getElementsByTagName("button");
+			var length = list.length
+			 console.log(list);
+			 console.log(list.length);
+				var check = 0;
+				var plus = 1;
+				
+				//document 안의 모든 버튼 조회
+			 for( i = 0; i<length; i++){
+				 console.log(i + list.item(check).id);
+				 console.log("first: " + check);
+				 	
+				if(list.item(check).id != "updateButton" && list.item(check).id != "deleteButton"){
+					document.getElementById(list.item(check).parentElement.removeChild(list.item(check)));
+				} else if (list.item(check).id == "updateButton" || list.item(check).id == "deleteButton"){
+						check = check + plus;
+				}
+				
+				}
+			
+			
+			
+			
+			//readonly 설정
+			var titleSection = document.getElementById("bbsTitle");
+			titleSection.readOnly = false;
+			var contentSection = document.getElementById("bbsContent");
+			contentSection.readOnly = false;
+
+			//onclick 변경 (수정 글 등록)
+			document.getElementById("updateButton").innerText = "수정 글 등록";
+			document.getElementById("updateButton").removeAttribute("onclick");
+			document.getElementById("updateButton").setAttribute("onclick","updateBbs()");
+			
+			document.getElementById("deleteButton").innerText = "글 수정 취소";
+			document.getElementById("deleteButton").removeAttribute("onclick");
+			document.getElementById("deleteButton").setAttribute("onclick","canceling()");
+
+			
+		}
+		//게시글 수정 2
+		function updateBbs(){
+			var form = document.getElementById("form");
+			form.action = "update";
+			form.method = "Post";
+			form.submit();
+		}
+		//게시글 삭제
+		function delete1(button){
+			var form = document.getElementById("form");
+			form.action = "delete";
+			form.method = "Post";
+			var delcheck = confirm("정말로 삭제하겠습니까?");
+			if(delcheck){
+				form.submit();
+			} 
+		}
+	</script>
+
+
+
+
+
+
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>

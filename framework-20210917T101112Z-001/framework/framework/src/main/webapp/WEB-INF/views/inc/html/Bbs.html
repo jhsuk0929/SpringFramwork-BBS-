@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>메인 게시판</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+
+    
+    <!-- <link th:href="@{css/demo.css}" href="../static/css/demo.css" rel="stylesheet" /> -->
+</head>
+<style>
+div.container{
+	position: static;
+	height: 350px;
+	border: 3px solid #000000;
+	text-align: center;
+	background-color: gray;
+}
+div.buttonContainer{
+	text-align: center;
+	position: fixed;
+	bottom: 250px;
+	right: 1280px;
+	/* top: 75px;
+	left: 200px; */
+}
+div.functionContainer{
+	text-align: center;
+	position: fixed;
+	bottom: 280px;
+	right: 180px;
+}
+div.paging{
+	text-align: center;
+	position: fixed;
+	bottom: 250px;
+	right: 700px;
+}
+
+
+/* mouse over link */
+a:hover {
+  color: green;
+}
+a{
+  color: black;
+}
+div.buttonContainer > a{
+	color:white;
+}
+</style>
+<body>
+	
+	<!-- 공통 네비게이션 바 -->
+	<div style="position:sticky; top:0 ;" th:if = "${check} != null" th:insert="inc/Sessionheader">...</div>
+	<div style="position:sticky; top:0 ;" th:unless = "${check} != null" th:insert="inc/header">...</div>
+	
+	<!-- 글 리스트 -->	
+	<input th:if="${nosuch} != null" id = "nosuch" value="nosuch">
+	<div class = "container">
+		<h3><strong>글 목록</strong></h3>
+		<table class = "table">
+			<thead>
+				<tr>
+					<td colspan = 1><h5><strong>글 번호</strong></h5></td>		
+					<td colspan = 1><h5><strong>글 제목</strong></h5></td>
+					<td colspan = 1><h5><strong>작성자</strong></h5></td>
+					<td colspan = 1><h5><strong>작성 시간</strong></h5></td>
+				</tr>
+			</thead>
+			<tbody>  <!-- iterState bbslist 인텍스를 나타냄-->
+				<tr th:each = "bbs,iterStat : ${list}">
+				<td th:text="${realHeader[iterStat.index]}"></td>
+				<td><a id="bbsTitle" th:value="${bbs.bbsID}" th:text="${bbs.bbsTitle}" onclick="detailView(this)"></a></td>
+				<td th:text="${bbs.userID}"></td>
+				<td th:text="${bbs.bbsDate}"></td>
+				</tr> 
+			</tbody>
+		</table>
+	</div>
+	
+	<div class="store">
+
+	<div  class="paging" >
+		<form id="form" action="/Bbs" method="Get">
+		
+		<input type="hidden" id="pageNumber" name="pageNumber" th:value="${pageNumber}">
+		<input type="hidden" id="field" name="field" th:value="${field}">
+		<input type="hidden" id="sortType" name="sortType" th:value="${sortType}">
+		<input type="hidden" id="searchWord" name="searchWord" th:value="${searchWord}">
+		<input type="hidden" id="total" name="total" th:value="${total}">
+		<input type="hidden" id="totalPage" name="totalPage" th:value="${totalPage}">
+		
+		<button  name="previous" id="previous" onclick="previousPage()">◀</button>	
+		<button th:each = "button:${paging}"  th:value="${button}" th:text="${button}" th:onclick="paging(this)"></button>
+		<button  name="next" id="next" onclick="nextPage()">▶</button>	
+		
+		</form>
+	</div>
+	
+	<div  class = "buttonContainer">
+		<a  th:if="${check} !=null" th:href="Write" class="btn btn-primary pull-left" >글 쓰기</a>
+		<button th:unless="${check} != null" th:onclick="checkLogin()" class="btn btn-primary pull-left" >글 쓰기</button>	
+	</div>
+	<div class = "functionContainer">
+		<form action="/Bbs" method="Post">
+			<label for="sorts">정렬 및 검색:</label>
+			<select name="sorts" id="sorts">
+			  	<option value="bbsTitle,ASC">글 제목 - 오름차순</option>
+			  	<option value="bbsTitle,DESC">글 제목 - 내림차순</option>
+				<option value="userID,ASC">작성자 - 오름차순</option>
+				<option value="userID,DESC">작성자 - 내림차순</option>
+				<option value="bbsDate,ASC">작성시간 - 오래된 순</option>
+				<option value="bbsDate,DESC">작성시간 - 최신 순</option>
+			</select>		
+			<input type="text" name="searchWord" id="searchWord" placeholder="검색어 입력">
+			<input type="hidden" name="pageNumber" id="pageNumber" value="1">
+			<button class = "btn btn-primary" name="submit" id="submit" onclick="Submit()">검색</button>
+		</form>
+	</div>
+	</div>
+
+	<script type="text/javascript">
+	//리스트 내용물이 없을때
+	if (document.getElementById("nosuch") != null){
+		alert("검색결과가 없습니다.")
+		history.back();
+	}
+	//글 상세보기
+	function detailView(button) {
+		var bbsID = button.getAttribute("value");
+		location.href= "detail?bbsID="+bbsID+"&replyPage="+1;
+	}
+	//숫자버튼으로 페이지 이동
+	function paging(button){
+	
+		var value = button.value;
+		console.log(value);
+		if(parseInt(value)<=parseInt(document.getElementById("totalPage").value)){
+		document.getElementById("pageNumber").setAttribute("value",value);
+		submit();
+		} else{
+			alert("존재하지 않는 페이지입니다.")
+		}
+	}
+	
+	//화살표 버튼다음 페이지 이동( 현재 페이지가 1 이거나 1 보다 클 때 & 현재 페이지가 총 페이지보다 작을 때)
+	function nextPage(){
+		if(parseInt(document.getElementById("pageNumber").value)>=1 && parseInt(document.getElementById("pageNumber").value)<parseInt(document.getElementById("totalPage").value)){
+		document.getElementById("pageNumber").setAttribute("value",parseInt(document.getElementById("pageNumber").value) +1);
+		console.log(document.getElementById("pageNumber").value);
+		submit();
+		}else{
+			alert("다음 페이지가 없습니다.")
+		}
+	}
+	//화살표 버튼 이전 페이지 이동( 현재 페이지가 일보다 크고 현재페이지가 전체페이지랑 같거나 작을 때)
+	function previousPage(){		
+		if(parseInt(document.getElementById("pageNumber").value)>1 && parseInt(document.getElementById("pageNumber").value)<=parseInt(document.getElementById("totalPage").value)){
+		document.getElementById("pageNumber").setAttribute("value",parseInt(document.getElementById("pageNumber").value) -1);
+		console.log(document.getElementById("pageNumber").value);
+		submit();
+		} else{
+			alert("이전 페이지가 없습니다.")
+		}
+	}
+	//글 쓰기 버튼 클릭시 로그인이 안 되어 있을 시
+	function checkLogin(){
+		alert("로그인 후 글 작성이 가능합니다");
+	}
+	
+	</script>
+	
+	
+	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>

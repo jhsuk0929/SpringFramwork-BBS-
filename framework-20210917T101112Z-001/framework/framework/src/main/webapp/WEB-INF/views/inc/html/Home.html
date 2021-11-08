@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>SpringBoot</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+
+    
+    <!-- <link th:href="@{css/demo.css}" href="../static/css/demo.css" rel="stylesheet" /> -->
+</head>
+<style>
+div.container{
+	position: static;
+	height: 350px;;
+	border: 3px solid #000000;
+	text-align: center;
+	background-color: gray;
+}
+</style>
+</head>
+<script>
+
+</script>
+<body>
+	<!-- 공통 네비게이션 바 -->
+	<div style="position:sticky; top:0 ;" th:if = "${check} != null" th:insert="inc/Sessionheader">...</div>
+	<div style="position:sticky; top:0 ;" th:unless = "${check} != null" th:insert="inc/header">...</div>
+	
+	
+	<div class="container">
+	<h1>SpringBoot를 활용한 게시판을 만들어 보았습니다.</h1>
+	<h3> 이 프로젝트에서는 SpringBoot, Thymeleaf, Mybatis를 사용하였습니다.</h3>
+	<br><br><br><br>
+	<div id = "store">
+	<input th:if="${out} != null" type="hidden" th:id="out" th:value="${out}">
+    <input th:if="${loginokay} != null" type="hidden" th:id="loginokay" th:value="${loginokay}">
+	</div>
+	<a class="btn btn-primary" href="https://www.spring.io">SpringBoot알아보기</a>
+	<a class="btn btn-primary" href="https://www.thymeleaf.org">Thymeleaf알아보기</a>
+	<a class="btn btn-primary" href="https://www.mybatis.org">Mybatis알아보기</a>
+	</div>
+		
+	<script type="text/javascript">
+	if(document.getElementById("out")!= null ){
+		alert("로그아웃 되었습니다.");
+		//로그아웃 후 새로고침시 alert 반복 방지
+		location.href ="index";
+	}
+	if(document.getElementById("loginokay")!= null ){
+		alert("로그인 완료!");
+		//로그인 후 새로고침시 alert 반복 방지
+		location.href ="index";
+	}
+	</script>
+
+
+																	<!-- -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>

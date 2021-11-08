@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="Bbs">
+  
+  
+  <select id="count" parameterType = "map" resultType="Integer">
+  Select count(*) from bbs where bbsAvailable = 1 
+  <if test=" filterBy.isBlank() == false and filterBy.isBlank() == false">
+  and ${filterBy} like'%${searchWord}%'
+  </if>
+  </select>
+  
+  <select id="getList" parameterType="map" resultType="com.jihun.bbs.Dto.Bbs">
+  select * from bbs where bbsAvailable = 1 
+  <choose>
+  <when test="filterBy !='' and filterBy != null">  
+  and ${filterBy} like '%${searchWord}%' order by ${filterBy} ${sortType} limit ${limit},5 
+  </when>
+  <when test="filterBy == null or filterBy ==''">
+  order by bbsDate ${sortType} limit ${limit},5
+  </when>
+  </choose>
+  </select>
+  
+  <select id="getBbsID" resultType = "Integer">
+  select bbsID from bbs order by bbsDate DESC limit 1
+  </select>
+  
+  <insert id="write" parameterType="map">
+  insert into Bbs(bbsID,bbsTitle,userID,bbsDate,bbsContent,bbsAvailable,file,view) values(${bbsID},'${bbsTitle}',
+  '${userID}','${bbsDate}','${bbsContent}',${bbsAvailable},'${fileName}',0)
+  </insert>
+<!--   
+  <select id="getAccount" parameterType="String" resultType = "com.jihun.bbs.Dto.User">
+  select * from user where userID = '${userID}'
+  </select>
+ -->
+  <select id="findBbs" resultType = "com.jihun.bbs.Dto.Bbs">
+  select * from bbs where bbsAvailable = 1 and bbsID = ${bbsID}
+  </select>
+  
+  <update id="upddate" parameterType="map">
+  update bbs set bbsTitle = '${bbsTitle}', bbsContent='${bbsContent}' 
+  <choose>
+  <when test="file.length() >3">
+  ,file='${file}'
+  </when>
+  <when test='file =="xx"'>
+  ,file = null
+  </when>
+  </choose>
+  where bbsID = ${bbsID}
+  </update>
+  
+  <update id = "viewCount" parameterType="Integer">
+  update bbs set view = view +1 where bbsID = ${bbsID}
+  </update>
+  
+  <update id="delete" parameterType="Integer">
+  update bbs set bbsAvailable = 2 where bbsID = ${bbsID}
+  </update>
+  <!-- like status -->
+  <update id = "status" parameterType="map">
+  update bbs set ${userStatus} = ${userStatus} + 1 where bbsID =${bbsID}
+  </update>
+  
+  <select id="getLikes" parameterType = "Integer" resultType="Integer">
+  select likeed from bbs where bbsID = ${bbsID}
+  </select>
+  <select id="getDislikes" parameterType = "Integer" resultType="Integer">
+  select dislikeed from bbs where bbsID = ${bbsID}
+  </select>
+  </mapper>

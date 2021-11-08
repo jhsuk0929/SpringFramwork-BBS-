@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>로그인</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <!-- <link th:href="@{css/demo.css}" href="../static/css/demo.css" rel="stylesheet" /> -->
+</head>
+<style>
+h2{
+text-align: center;
+}
+div.container{
+	padding: auto;
+	border: 3px solid #000000;
+	width:500px;
+	background-color: gray;
+}
+button{
+	text-align:center;
+	width: 100%;
+}
+input[type=text], select {
+  width: 450px;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+input[type=password], select {
+  width: 450px;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+<body>
+	<!-- 공통 네비게이션 바 -->
+	<div style="position:sticky; top:0 ;" th:insert="inc/header">...</div>
+	
+	<!-- 로그인 양식 -->
+	<div class = "container">
+		<form action="LoginController" method="post">
+			<input th:if="${alert} != null" type="hidden" th:id="alert" th:value="${alert}">
+			<input th:if="${joinokay} != null" type="hidden" th:id="joinokay" th:value="${joinokay}">
+			<h2>로그인</h2>		
+			<label>아이디(ID):
+			<input type="text" name="userid" id="userid" required>
+			</label>
+			<br><br>
+			<label>비밀번호(PW):
+			<input type="password" name="userpassword" id="userpassword" required>
+			</label>		
+			<br><br>
+			<button class = "btn btn-primary" name="login" id="login" onclick="Submit()">
+			로그인</button>
+		</form>
+	</div>
+	<script type="text/javascript">
+	if(document.getElementById("alert")!= null ){
+		alert("아이디 또는 비밀번호가 틀립니다.");
+	}
+	if(document.getElementById("joinokay")!= null ){
+		alert("회원가입이 성공적으로 완료되었습니다.");
+	}
+	</script>
+		
+	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>
